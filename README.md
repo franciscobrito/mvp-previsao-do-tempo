@@ -9,7 +9,6 @@ Este fluxo desenvolvido em **n8n** oferece aos usuários uma experiência automa
 Permitir que usuários:
 - Consultem a previsão atual do tempo informando uma cidade;
 - Ativem ou recusem o recebimento de **alertas automáticos** de clima;
-- Recebam alertas traduzidos e formatados diretamente no WhatsApp.
 
 ---
 
