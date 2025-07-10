@@ -1,0 +1,2009 @@
+{
+  "name": "MVP - Previsão do Tempo no Whatsapp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0e4c868d-6cdc-4374-9fbd-08c05cc6d4fb",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        0
+      ],
+      "id": "03bf2df8-320f-476c-998e-f1ef0c9ac46e",
+      "name": "Webhook",
+      "webhookId": "0e4c868d-6cdc-4374-9fbd-08c05cc6d4fb"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.server_url }}/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Code').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ffba2fc-5238-4d47-bc25-22fe074f9a28",
+      "name": "Enviar Mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3460,
+        560
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c6c6a9bb-cc32-45c2-8203-3665f93f5586",
+              "name": "whatsapp",
+              "value": "={{ $('Webhook').item.json.body.data.key.remoteJid.split(\"@\")?.first() }}",
+              "type": "string"
+            },
+            {
+              "id": "051ef912-4a2b-4cd2-a56e-f7bf94a1e45b",
+              "name": "nome",
+              "value": "={{ $('Webhook').item.json.body.data.pushName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "0015ca51-0507-460f-9f02-fc129a3a27ba",
+      "name": "Simplificação de Dados"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "usuarios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "whatsapp",
+              "keyValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        140,
+        560
+      ],
+      "id": "998cc109-5bf4-433a-ac62-2238f233ee07",
+      "name": "Buscar usuário",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63e3cfee-206f-46d4-8d59-bc53ee157b8a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        560
+      ],
+      "id": "b6f33af5-c8cc-4f0e-938c-8f69b9bb94bf",
+      "name": "Cliente Existe"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        760,
+        560
+      ],
+      "id": "7f03f2e8-4a67-44a6-9113-0e2f0b930fe2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "tableId": "usuarios",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "nome",
+              "fieldValue": "={{ $('Simplificação de Dados').item.json.nome }}"
+            },
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        520,
+        740
+      ],
+      "id": "41209ff3-397c-4327-8351-0a886be63085",
+      "name": "Criar usuário",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ed48608a-4b9d-48cc-a410-d5834e2ba838"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c145a27b-0b4f-4408-9465-2359c565405c",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.messageType }}",
+                    "rightValue": "extendedTextMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "texto"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Outro"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1060,
+        560
+      ],
+      "id": "8bedfeb0-37ca-456c-8e03-99c52614e038",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3660,
+        560
+      ],
+      "id": "415a2b7e-3b06-44a0-82ad-63d8a34d6a2f",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b6dfede8-4409-43e8-aa65-b4a31ec7e45a",
+              "name": "Texto",
+              "value": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1240,
+        440
+      ],
+      "id": "d03628b3-bcea-4bc9-9806-a28a1381abe8",
+      "name": "Mensagem Texto1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1460,
+        560
+      ],
+      "id": "9f8a9b6d-2952-4930-aa63-558f0240b04c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4310f8f9-7973-446f-b883-e29d0e02794e",
+              "leftValue": "={{ $json.error.status }}",
+              "rightValue": 400,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1940,
+        560
+      ],
+      "id": "5a71d34e-45e6-4672-a710-666277e6afae",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "if (!$input.first().json.location.name) throw new Error(\"Cidade não encontrada ou API falhou.\");\nconst temperatura = $input.first().json.current.temp_c;\nconst descricao = $input.first().json.current.condition.text;\nconst umidade= $input.first().json.current.humidity;\nconst cidade = $input.first().json.location.name;\nconst output = `🌤️ Clima em ${cidade}:\n- ☁ Condição: ${descricao}\n- 🌡 Temperatura: ${temperatura}°C\n- 💧 Umidade: ${umidade}%\n❗Deseja receber alertas automáticos quando o clima mudar drasticamente em ${cidade}? \\n\\n Digite:\\n *1* para *SIM* \\n *2* para *NÃO*.`;\nreturn [{ json: { output } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        560
+      ],
+      "id": "e16284e5-49fe-4173-b21f-73845e21154e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+                    "rightValue": "1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3f254680-4bcd-4a8a-90fb-41ba67387a72"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sim"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3820a040-66c7-46cd-a158-65605ab24f58",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+                    "rightValue": "2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nao"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f3d906d2-b255-4d4b-b01a-76d0465b84f1",
+                    "leftValue": "={{ $('Webhook').item.json.body.data.message.conversation }}",
+                    "rightValue": "1,2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "outros"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "1dc8ed21-74fa-42be-b93a-6777024a3e6d",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "whatsapp",
+              "keyValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        560
+      ],
+      "id": "4db725ca-8894-4d48-94e0-2b519a428b55",
+      "name": "Buscar alerta",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63e3cfee-206f-46d4-8d59-bc53ee157b8a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2760,
+        560
+      ],
+      "id": "dae7e9ff-f429-4223-9358-b3b1641c2a8f",
+      "name": "Alerta Existe"
+    },
+    {
+      "parameters": {
+        "tableId": "alertas",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            },
+            {
+              "fieldId": "cidade",
+              "fieldValue": "={{ $('WeatherAPI').item.json.location.name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        760
+      ],
+      "id": "501a18de-6231-43ef-bb83-6b25a71ebf32",
+      "name": "Criar alerta",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.weatherapi.com/v1/current.json?key=2a3f2ba0e5b6413ca14174021250807&q={{ $json.Texto }}&aqi=no&lang=pt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1720,
+        560
+      ],
+      "id": "0d71fd73-0155-446c-be07-73f7e175f343",
+      "name": "WeatherAPI",
+      "executeOnce": false,
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "0eb9dcad-57a7-4ff1-a12f-457143585c86",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        3260,
+        560
+      ],
+      "id": "516bf7f1-8d04-4f74-9df2-9cddd00b1b94",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "whatsapp",
+              "keyValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        140,
+        -400
+      ],
+      "id": "04170752-7fc0-40cc-b02c-7f093f7f6bf6",
+      "name": "Buscar alerta1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63e3cfee-206f-46d4-8d59-bc53ee157b8a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        -400
+      ],
+      "id": "1c3d3e0c-3335-46ee-aa6f-c0e9663725b0",
+      "name": "Alerta Existe1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "whatsapp",
+              "keyValue": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        140,
+        0
+      ],
+      "id": "76756587-faa6-4a15-8c1e-39fd6724ab29",
+      "name": "Buscar alerta2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63e3cfee-206f-46d4-8d59-bc53ee157b8a",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "6c6a0625-e1d3-4555-bff5-ac0eaf5cbc5c",
+      "name": "Alerta Existe2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Buscar alerta2').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "alertaAtivo",
+              "fieldValue": "={{ false }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "4ef6a2f4-e33a-4b02-9e03-3c5c306c303e",
+      "name": "Recusa Alerta",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        -400
+      ],
+      "id": "a38c58ae-34d1-4379-b0dd-639f06e478a7",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Buscar alerta1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "alertaAtivo",
+              "fieldValue": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -400
+      ],
+      "id": "0abf81e3-95b9-47aa-b577-51fb4bb3f41d",
+      "name": "Aceita Alerta",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Buscar alerta').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "cidade",
+              "fieldValue": "={{ $('WeatherAPI').item.json.location.name }}"
+            },
+            {
+              "fieldId": "alertaAtivo",
+              "fieldValue": "={{ false }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3020,
+        540
+      ],
+      "id": "6850e750-64f1-47de-8407-70ab5ea7df41",
+      "name": "Alterar Cidade",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        1520
+      ],
+      "id": "7dd2c5a0-005d-404b-b9bf-dc1787315317"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "alertas",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1520
+      ],
+      "id": "76d671a9-29a9-488f-b6e1-aa90a977c2f1",
+      "name": "Buscar alerta3",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://wapi.inovacaoia.shop/message/sendText/EstudoNoCode",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Buscar alerta3').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Basic LLM Chain').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "95b46b9c-1bcf-4b50-a962-e9fea9fbba78",
+      "name": "Enviar Alerta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        1500
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        1520
+      ],
+      "id": "55ab3f8d-d093-492e-8fe1-2ee7de178309",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.server_url }}/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Mensagem Aceita').item.json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72335052-ad78-453a-a6fc-ed3ebf40d489",
+      "name": "Mensagem Alerta Aceito",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        -400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.server_url }}/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Mensagem Recusa').item.json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8a928594-23a3-4a0a-ae95-4c012f24b9b1",
+      "name": "Mensagem Alerta Recusa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "texto",
+              "value": "=✅ Perfeito! Você agora receberá alertas automáticos sobre mudanças climáticas em {{ $json.cidade }}."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mensagem Aceita",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        820,
+        -400
+      ],
+      "id": "1b45a6e4-7748-4d33-8883-1a16da25c9ff"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "texto",
+              "value": "Ok, sem problemas. Se quiser receber alertas depois, é só avisar!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mensagem Recusa",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        820,
+        0
+      ],
+      "id": "efce658c-3195-45d5-85ab-59734e14b42c"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.weatherapi.com/v1/alerts.json?key=2a3f2ba0e5b6413ca14174021250807&q={{ $json.cidade }}&lang=pt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -100,
+        1520
+      ],
+      "id": "81df5a48-e7b5-40e5-9d02-d200cd2680de",
+      "name": "WeatherAPI1",
+      "executeOnce": false,
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* --- Mapas de tradução --- */\nconst mapaEventos = {\n  \"Extreme Heat Warning\": \"⚠️ Alerta de Calor Extremo\",\n  \"Heat Advisory\":        \"🌡️ Aviso de Calor\",\n  \"Flash Flood Warning\":  \"🌊 Alerta de Inundação Súbita\",\n  \"Thunderstorm Warning\": \"⛈️ Alerta de Tempestade\",\n  \"Tornado Warning\":      \"🌪️ Alerta de Tornado\",\n  \"Hurricane Watch\":      \"🌀 Monitoramento de Furacão\",\n  \"Flood Watch\":          \"🌧️ Monitoramento de Inundação\",\n  \"Winter Storm Warning\": \"❄️ Alerta de Tempestade de Inverno\",\n  \"High Wind Warning\":    \"💨 Alerta de Ventos Fortes\"\n};\n\nconst mapaSeveridade = {\n  Extreme:  \"🔴 Extremo\",\n  Severe:   \"🟠 Severo\",\n  Moderate: \"🟡 Moderado\",\n  Minor:    \"🟢 Leve\",\n  Unknown:  \"⚪ Desconhecido\"\n};\n\nconst traduzEvento     = (e) => mapaEventos[e]    || `🔔 ${e}`;\nconst traduzSeveridade = (s) => mapaSeveridade[s] || s;\n\n/* --- Lógica principal --- */\nreturn items.map(item => {\n  const dados = $input.first().json.alerts;\n\n  if (!dados.alert || !Array.isArray(dados.alert) || dados.alert.length === 0) {\n    return { json: { alert: false, message: null } };\n  }\n\n  const alerta = dados.alert.find(a => mapaEventos[a.event]) || dados.alert[0];\n  const cidade = $input.first().json.location.name;\n\n  const mensagem =\n`📍 *Alerta climático em ${cidade}!*\n\n${traduzEvento(alerta.event)}\n${traduzSeveridade(alerta.severity)}\n\n📌 *Regiões afetadas:* ${alerta.areas}\n📖 *Resumo:* ${alerta.desc.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}\n✅ *O que fazer:* ${alerta.instruction.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}`;\n\n  return {\n    json: {\n      alert: true,\n      message: mensagem.slice(0, 1000),\n      city: cidade\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        1520
+      ],
+      "id": "8ad78a23-a6a2-4ac1-b355-772bd25425f9",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        1360
+      ],
+      "id": "9f80c795-005f-4182-bc4c-4d1c610e6eb8",
+      "name": "No Operation, do nothing4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Você é um tradutor especializado em alertas climáticos; traduza fielmente para português do Brasil, mantendo emojis e formatação.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{ $json.message }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        760,
+        1500
+      ],
+      "id": "76cb842c-c89b-483b-8f9a-03296fd217c9",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        1700
+      ],
+      "id": "d56ed492-d324-40d8-a54b-210aa5747043",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "xpGEudAINNAs3J02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "306d31ab-0c48-49fe-899f-d8fea4f42f02",
+              "leftValue": "={{ $json.alert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        460,
+        1520
+      ],
+      "id": "3b19055f-8717-48a3-bc45-3a9b305c1313",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11dc126a-e72e-431b-8db5-c78168c69439",
+              "name": "Erro",
+              "value": "<ErroFormatoMensagem>",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1240,
+        760
+      ],
+      "id": "19ef2455-54e8-47a2-beed-d7e5d17f3ee1",
+      "name": "Mensagem Erro"
+    },
+    {
+      "parameters": {
+        "content": "## Registro do usuário no banco de dados (Supabase)\nFluxo para adição do usuário no banco de dados postgrees supabase.",
+        "height": 480,
+        "width": 940,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        440
+      ],
+      "id": "e192e53d-b5a6-47cb-b594-0bc56efc79a2",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Gatilho\nEscuta requisições POST vindas do WhatsApp (Evolution API)",
+        "height": 360,
+        "width": 300,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        -140
+      ],
+      "id": "adb5cfd6-3e8d-45ef-8118-2b67bbe8933c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Altera a flag alertaAtivo para TRUE caso o usuário deseje receber alertas automáticos",
+        "height": 400,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -560
+      ],
+      "id": "78b7a10f-7e9b-4da3-b44b-43a14898a81b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Altera a flag alertaAtivo para FALSE caso o usuário não deseje receber alertas automáticos",
+        "height": 400,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -120
+      ],
+      "id": "c1b505b2-3ab2-4f2c-a476-a0081a2a2661",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Registra e altera alerta no banco de dados (Supabase)\nFluxo para adição e alteração de alerta no banco de dados postgres supabase",
+        "height": 480,
+        "width": 860,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2540,
+        440
+      ],
+      "id": "52b605e0-d319-419f-9e9f-45e4d33e41d7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Agente de IA\nAgente inteligente que realiza tradução da mensagem da API de clima",
+        "height": 440,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        1400
+      ],
+      "id": "7447c0f1-371a-444d-b5f4-1a18358908ca",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Envio de alerta ao usuário via Evolution API",
+        "height": 440,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        1400
+      ],
+      "id": "a7a652dc-aff8-4e04-8a22-a9e8156cfd47",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Envio de mensagem de confirmação ao usuário via Evolution API, informando que ele receberá alertas automáticos sobre mudanças drásticas no tempo",
+        "height": 400,
+        "width": 720,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        740,
+        -560
+      ],
+      "id": "18df6997-f463-4af6-8576-9b96ac0e29a7",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Envio de mensagem de recusa de alerta automático ao usuário via Evolution API",
+        "height": 400,
+        "width": 720,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        740,
+        -120
+      ],
+      "id": "3afc063f-31c4-4c41-a7aa-6ce0bd5d9b6a",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Extrai número do whatsapp e nome do contato",
+        "height": 360,
+        "width": 300,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        -140
+      ],
+      "id": "b2971883-b740-43ca-85da-3130c60b74ae",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Verifica se a mensagem é texto simples ou uma resposta de escolha (“1” ou “2”)",
+        "height": 360,
+        "width": 300,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -140
+      ],
+      "id": "50ba50b2-ee8e-44fb-a2aa-3751bf9e977b",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1620,
+        "width": 5120,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -640
+      ],
+      "id": "513aadad-4ae5-47c8-8a5e-c4c8479c34a5",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Formata resposta com previsão e pergunta sobre alertas\n",
+        "height": 480,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        440
+      ],
+      "id": "7ab4c894-8bcf-403c-9602-7360159ff911",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Envio da previsão do tempo para o usuário via Evolution API",
+        "height": 480,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3420,
+        440
+      ],
+      "id": "005dc56d-0672-453f-83cf-53341cb0565d",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento de Mensagens\nVerifica se é uma mensagem de texto (conversation ou extendedTextMessage)",
+        "height": 600,
+        "width": 600,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        320
+      ],
+      "id": "1c38f326-df15-4881-9874-d67919dc6f1c",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Agenda verificação periódica de alertas",
+        "height": 440,
+        "width": 700,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        1400
+      ],
+      "id": "fac6a56e-0332-4f77-b2be-64b10570b18b",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Detecta condições climáticas críticas\n",
+        "height": 540,
+        "width": 840,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        1300
+      ],
+      "id": "ecb11220-47ec-49e2-b83b-4b21d3afd21c",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Consulta de previsão do tempo na WeatherAPI com base na cidade informada",
+        "height": 480,
+        "width": 520,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        440
+      ],
+      "id": "6a2b51b5-d9e3-4dc8-b0df-e9caac9f797a",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "-\n# Previsão do Tempo\n-",
+        "height": 140,
+        "width": 580,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -800
+      ],
+      "id": "74697730-cfcd-4b61-83ab-3d4594f3bca6",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "-\n# Alerta de previsão climática\n-",
+        "height": 140,
+        "width": 580,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        1020
+      ],
+      "id": "ac524ab2-f427-4b2b-b42a-4b45d0528aa6",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 780,
+        "width": 2660,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        1180
+      ],
+      "id": "e0ada75c-d861-4493-bf94-452116d5d8bb",
+      "name": "Sticky Note20"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Simplificação de Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simplificação de Dados": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar usuário": {
+      "main": [
+        [
+          {
+            "node": "Cliente Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente Existe": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar usuário": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Texto1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Texto1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "WeatherAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Buscar alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Buscar alerta1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar alerta2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar alerta": {
+      "main": [
+        [
+          {
+            "node": "Alerta Existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta Existe": {
+      "main": [
+        [
+          {
+            "node": "Alterar Cidade",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WeatherAPI": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar alerta": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar alerta1": {
+      "main": [
+        [
+          {
+            "node": "Alerta Existe1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta Existe1": {
+      "main": [
+        [
+          {
+            "node": "Aceita Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar alerta2": {
+      "main": [
+        [
+          {
+            "node": "Alerta Existe2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alerta Existe2": {
+      "main": [
+        [
+          {
+            "node": "Recusa Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recusa Alerta": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Recusa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aceita Alerta": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Aceita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alterar Cidade": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar alerta3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar alerta3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Alerta": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WeatherAPI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Alerta Aceito": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Alerta Recusa": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Aceita": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Alerta Aceito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Recusa": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Alerta Recusa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WeatherAPI1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Erro": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "208cbc9c-fafa-41f2-9f22-c20f723c0d99",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e2ffe4a13ab7608a185e0ee2dc37196fd3f36d2d9f915f780ff1c6b49fe3e8ec"
+  },
+  "id": "v7sp1ovq08BjFAUM",
+  "tags": []
+}
