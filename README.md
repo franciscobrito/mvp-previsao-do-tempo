@@ -66,8 +66,7 @@ Permitir que usuários:
 ## 🧠 Agente de IA
 
 - A OpenAI GPT é usada para:
-  - Traduzir mensagens técnicas da WeatherAPI
-  - Manter emojis, clareza e instruções práticas
+  - Traduzir mensagens técnicas da WeatherAPI, uma vez que, mesmo ao definir o parâmetro lang=pt as informações continuam sendo entregues em inglês. 
 
 ---
 
