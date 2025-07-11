@@ -804,6 +804,9 @@
             {
               "fieldId": "alertaAtivo",
               "fieldValue": "={{ false }}"
+            },
+            {
+              "fieldId": "qtd_alertas"
             }
           ]
         }
@@ -822,97 +825,6 @@
           "name": "Supabase Tutorial"
         }
       }
-    },
-    {
-      "parameters": {
-        "triggerTimes": {
-          "item": [
-            {
-              "hour": 8
-            }
-          ]
-        }
-      },
-      "name": "Schedule Trigger",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        -880,
-        1520
-      ],
-      "id": "7dd2c5a0-005d-404b-b9bf-dc1787315317"
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "tableId": "alertas",
-        "returnAll": true,
-        "filterType": "none"
-      },
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [
-        -640,
-        1520
-      ],
-      "id": "76d671a9-29a9-488f-b6e1-aa90a977c2f1",
-      "name": "Buscar alerta3",
-      "alwaysOutputData": true,
-      "credentials": {
-        "supabaseApi": {
-          "id": "cHkPeaoVuLxom4DN",
-          "name": "Supabase Tutorial"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://wapi.inovacaoia.shop/message/sendText/EstudoNoCode",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "number",
-              "value": "={{ $('Buscar alerta3').item.json.whatsapp }}"
-            },
-            {
-              "name": "text",
-              "value": "={{ $('Basic LLM Chain').item.json.text }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "95b46b9c-1bcf-4b50-a962-e9fea9fbba78",
-      "name": "Enviar Alerta",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1200,
-        1500
-      ],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "GGrqzaQLEmSqNj4M",
-          "name": "Evolution Header"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -400,
-        1520
-      ],
-      "id": "55ab3f8d-d093-492e-8fe1-2ee7de178309",
-      "name": "Loop Over Items"
     },
     {
       "parameters": {
@@ -1030,131 +942,6 @@
     },
     {
       "parameters": {
-        "url": "=https://api.weatherapi.com/v1/alerts.json?key=2a3f2ba0e5b6413ca14174021250807&q={{ $json.cidade }}&lang=pt",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -100,
-        1520
-      ],
-      "id": "81df5a48-e7b5-40e5-9d02-d200cd2680de",
-      "name": "WeatherAPI1",
-      "executeOnce": false,
-      "retryOnFail": false,
-      "alwaysOutputData": false,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "/* --- Mapas de tradução --- */\nconst mapaEventos = {\n  \"Extreme Heat Warning\": \"⚠️ Alerta de Calor Extremo\",\n  \"Heat Advisory\":        \"🌡️ Aviso de Calor\",\n  \"Flash Flood Warning\":  \"🌊 Alerta de Inundação Súbita\",\n  \"Thunderstorm Warning\": \"⛈️ Alerta de Tempestade\",\n  \"Tornado Warning\":      \"🌪️ Alerta de Tornado\",\n  \"Hurricane Watch\":      \"🌀 Monitoramento de Furacão\",\n  \"Flood Watch\":          \"🌧️ Monitoramento de Inundação\",\n  \"Winter Storm Warning\": \"❄️ Alerta de Tempestade de Inverno\",\n  \"High Wind Warning\":    \"💨 Alerta de Ventos Fortes\"\n};\n\nconst mapaSeveridade = {\n  Extreme:  \"🔴 Extremo\",\n  Severe:   \"🟠 Severo\",\n  Moderate: \"🟡 Moderado\",\n  Minor:    \"🟢 Leve\",\n  Unknown:  \"⚪ Desconhecido\"\n};\n\nconst traduzEvento     = (e) => mapaEventos[e]    || `🔔 ${e}`;\nconst traduzSeveridade = (s) => mapaSeveridade[s] || s;\n\n/* --- Lógica principal --- */\nreturn items.map(item => {\n  const dados = $input.first().json.alerts;\n\n  if (!dados.alert || !Array.isArray(dados.alert) || dados.alert.length === 0) {\n    return { json: { alert: false, message: null } };\n  }\n\n  const alerta = dados.alert.find(a => mapaEventos[a.event]) || dados.alert[0];\n  const cidade = $input.first().json.location.name;\n\n  const mensagem =\n`📍 *Alerta climático em ${cidade}!*\n\n${traduzEvento(alerta.event)}\n${traduzSeveridade(alerta.severity)}\n\n📌 *Regiões afetadas:* ${alerta.areas}\n📖 *Resumo:* ${alerta.desc.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}\n✅ *O que fazer:* ${alerta.instruction.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}`;\n\n  return {\n    json: {\n      alert: true,\n      message: mensagem.slice(0, 1000),\n      city: cidade\n    }\n  };\n});\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        160,
-        1520
-      ],
-      "id": "8ad78a23-a6a2-4ac1-b355-772bd25425f9",
-      "name": "Code1"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        -100,
-        1360
-      ],
-      "id": "9f80c795-005f-4182-bc4c-4d1c610e6eb8",
-      "name": "No Operation, do nothing4"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Você é um tradutor especializado em alertas climáticos; traduza fielmente para português do Brasil, mantendo emojis e formatação.",
-        "messages": {
-          "messageValues": [
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "={{ $json.message }}"
-            }
-          ]
-        },
-        "batching": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.7,
-      "position": [
-        760,
-        1500
-      ],
-      "id": "76cb842c-c89b-483b-8f9a-03296fd217c9",
-      "name": "Basic LLM Chain"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gpt-4.1-mini"
-        },
-        "options": {
-          "temperature": 0.4
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        740,
-        1700
-      ],
-      "id": "d56ed492-d324-40d8-a54b-210aa5747043",
-      "name": "OpenAI Chat Model",
-      "credentials": {
-        "openAiApi": {
-          "id": "xpGEudAINNAs3J02",
-          "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "306d31ab-0c48-49fe-899f-d8fea4f42f02",
-              "leftValue": "={{ $json.alert }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        460,
-        1520
-      ],
-      "id": "3b19055f-8717-48a3-bc45-3a9b305c1313",
-      "name": "If1"
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
@@ -1255,38 +1042,6 @@
       ],
       "id": "52b605e0-d319-419f-9e9f-45e4d33e41d7",
       "name": "Sticky Note3"
-    },
-    {
-      "parameters": {
-        "content": "## Agente de IA\nAgente inteligente que realiza tradução da mensagem da API de clima",
-        "height": 440,
-        "width": 360,
-        "color": 6
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        700,
-        1400
-      ],
-      "id": "7447c0f1-371a-444d-b5f4-1a18358908ca",
-      "name": "Sticky Note11"
-    },
-    {
-      "parameters": {
-        "content": "## Envio de alerta ao usuário via Evolution API",
-        "height": 440,
-        "width": 360,
-        "color": 6
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1080,
-        1400
-      ],
-      "id": "a7a652dc-aff8-4e04-8a22-a9e8156cfd47",
-      "name": "Sticky Note13"
     },
     {
       "parameters": {
@@ -1418,38 +1173,6 @@
     },
     {
       "parameters": {
-        "content": "## Agenda verificação periódica de alertas",
-        "height": 440,
-        "width": 700,
-        "color": 6
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -920,
-        1400
-      ],
-      "id": "fac6a56e-0332-4f77-b2be-64b10570b18b",
-      "name": "Sticky Note10"
-    },
-    {
-      "parameters": {
-        "content": "## Detecta condições climáticas críticas\n",
-        "height": 540,
-        "width": 840,
-        "color": 6
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -180,
-        1300
-      ],
-      "id": "ecb11220-47ec-49e2-b83b-4b21d3afd21c",
-      "name": "Sticky Note12"
-    },
-    {
-      "parameters": {
         "content": "## Consulta de previsão do tempo na WeatherAPI com base na cidade informada",
         "height": 480,
         "width": 520,
@@ -1479,38 +1202,6 @@
       ],
       "id": "74697730-cfcd-4b61-83ab-3d4594f3bca6",
       "name": "Sticky Note18"
-    },
-    {
-      "parameters": {
-        "content": "-\n# Alerta de previsão climática\n-",
-        "height": 140,
-        "width": 580,
-        "color": 6
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1060,
-        1020
-      ],
-      "id": "ac524ab2-f427-4b2b-b42a-4b45d0528aa6",
-      "name": "Sticky Note19"
-    },
-    {
-      "parameters": {
-        "content": "",
-        "height": 780,
-        "width": 2660,
-        "color": 7
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1060,
-        1180
-      ],
-      "id": "e0ada75c-d861-4493-bf94-452116d5d8bb",
-      "name": "Sticky Note20"
     },
     {
       "parameters": {},
@@ -1595,6 +1286,432 @@
           "name": "Evolution Header"
         }
       }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyHour",
+              "minute": 59
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        1500
+      ],
+      "id": "d4bcc0bb-a24b-4d11-9afa-217bc7af84ad"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://wapi.inovacaoia.shop/message/sendText/EstudoNoCode",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Buscar alerta existente').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Basic LLM Chain').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8a4b623-7dae-4806-8e0b-6bde74ec8c50",
+      "name": "Enviar Alerta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        1480
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        1500
+      ],
+      "id": "785824a2-6404-426d-bc07-0fb8d71cab1e",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.weatherapi.com/v1/alerts.json?key=2a3f2ba0e5b6413ca14174021250807&q={{ $json.cidade }}&lang=pt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        1500
+      ],
+      "id": "595a2d37-30f6-4e91-a468-65683be8ca48",
+      "name": "WeatherAPI1",
+      "executeOnce": false,
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* --- Mapas de tradução --- */\nconst mapaEventos = {\n  \"Extreme Heat Warning\": \"⚠️ Alerta de Calor Extremo\",\n  \"Heat Advisory\":        \"🌡️ Aviso de Calor\",\n  \"Flash Flood Warning\":  \"🌊 Alerta de Inundação Súbita\",\n  \"Thunderstorm Warning\": \"⛈️ Alerta de Tempestade\",\n  \"Tornado Warning\":      \"🌪️ Alerta de Tornado\",\n  \"Hurricane Watch\":      \"🌀 Monitoramento de Furacão\",\n  \"Flood Watch\":          \"🌧️ Monitoramento de Inundação\",\n  \"Winter Storm Warning\": \"❄️ Alerta de Tempestade de Inverno\",\n  \"High Wind Warning\":    \"💨 Alerta de Ventos Fortes\"\n};\n\nconst mapaSeveridade = {\n  Extreme:  \"🔴 Extremo\",\n  Severe:   \"🟠 Severo\",\n  Moderate: \"🟡 Moderado\",\n  Minor:    \"🟢 Leve\",\n  Unknown:  \"⚪ Desconhecido\"\n};\n\nconst traduzEvento     = (e) => mapaEventos[e]    || `🔔 ${e}`;\nconst traduzSeveridade = (s) => mapaSeveridade[s] || s;\n\n/* --- Lógica principal --- */\nreturn items.map(item => {\n  const dados = $input.first().json.alerts;\n\n  if (!dados.alert || !Array.isArray(dados.alert) || dados.alert.length === 0) {\n    return { json: { alert: false, message: null } };\n  }\n\n  const alerta = dados.alert.find(a => mapaEventos[a.event]) || dados.alert[0];\n  const cidade = $input.first().json.location.name;\n  const qtd_alertas = dados.alert.length;\n\n  const mensagem =\n`📍 *Alerta climático em ${cidade}!*\n\n${traduzEvento(alerta.event)}\n${traduzSeveridade(alerta.severity)}\n\n📌 *Regiões afetadas:* ${alerta.areas}\n📖 *Resumo:* ${alerta.desc.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}\n✅ *O que fazer:* ${alerta.instruction.replace(/\\*/g, '').replace(/\\n/g, ' ').trim()}`;\n\n  return {\n    json: {\n      alert: true,\n      message: mensagem.slice(0, 1000),\n      qtd_alertas: qtd_alertas,\n      city: cidade\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        1500
+      ],
+      "id": "362cf5d5-7322-47d4-ba75-15d96e9f5ef0",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        1340
+      ],
+      "id": "d1ac754a-5673-452d-955b-7c91fb41d178",
+      "name": "No Operation, do nothing4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Você é um tradutor especializado em alertas climáticos; traduza fielmente para português do Brasil, mantendo emojis e formatação.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{ $json.message }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        720,
+        1480
+      ],
+      "id": "876110ff-0d63-4e2a-a003-48868331ae24",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        1680
+      ],
+      "id": "1abc73bd-7679-4ce4-80d0-5ef65b40e0bb",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "xpGEudAINNAs3J02",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "306d31ab-0c48-49fe-899f-d8fea4f42f02",
+              "leftValue": "={{ $json.alert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        1500
+      ],
+      "id": "fd311c49-cbc9-42e5-8586-e434cb0c3563",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Agente de IA\nAgente inteligente que realiza tradução da mensagem da API de clima",
+        "height": 500,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        660,
+        1320
+      ],
+      "id": "86282a6f-221a-4ca7-a51b-b4a4cc716939",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Envio de alerta ao usuário via Evolution API",
+        "height": 500,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        1320
+      ],
+      "id": "4dc1c28c-c428-45a4-87a6-04beec69fa7d",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Agenda verificação periódica de alertas",
+        "height": 440,
+        "width": 700,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        1380
+      ],
+      "id": "5eeb8ee4-4256-4a74-8390-486ff0834c2a",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Detecta condições climáticas críticas\n",
+        "height": 540,
+        "width": 840,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        1280
+      ],
+      "id": "1cba8671-a3dd-4723-97be-d28639da3208",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "-\n# Alerta de previsão climática\n-",
+        "height": 140,
+        "width": 580,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        1000
+      ],
+      "id": "e800c281-8b8e-444a-9cfa-b29b00d4f904",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 780,
+        "width": 3360,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        1160
+      ],
+      "id": "095c6644-c359-40bd-a6d4-b2a7c5d2a86c",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "={{ $('Buscar alerta existente').item.json.ultimaMensagemAlerta }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEqual"
+              },
+              "id": "dbd16ebb-a872-46b1-b383-3bc7c85da54e"
+            },
+            {
+              "id": "01c99586-cb78-4d17-a3f6-d884782909fe",
+              "leftValue": "={{ $('Code1').item.json.qtd_alertas.toString() }}",
+              "rightValue": "={{ $('Buscar alerta existente').item.json.qtd_alertas }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "4a0909f0-e070-468d-82f4-02ebfa6b8d90",
+      "name": "Mensagem é nova?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        1480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "alertas",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1500
+      ],
+      "id": "84c98ab2-c33f-4438-bb47-c1290651c775",
+      "name": "Buscar alerta existente",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "alertas",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Buscar alerta existente').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "qtd_alertas",
+              "fieldValue": "={{ $('Code1').item.json.qtd_alertas }}"
+            }
+          ]
+        }
+      },
+      "id": "10ce5fd7-d491-4666-8e67-fdf9c279e1ac",
+      "name": "Atualizar quantidade de alerta",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        1480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cHkPeaoVuLxom4DN",
+          "name": "Supabase Tutorial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Valida se a nova quantidade de alertas ou mensagem é diferente da anterior.\nEvita alertas duplicados se nada mudou no clima",
+        "height": 500,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        1320
+      ],
+      "id": "9c576adf-de34-49fc-9365-209d7a64effa",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Atualiza o campo `qtd_alertas` no Supabase com os dados mais recentes do alerta climático",
+        "height": 500,
+        "width": 360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1320
+      ],
+      "id": "cc9a6e52-226c-4924-b5da-8ea4b8b9dcde",
+      "name": "Sticky Note23"
     }
   ],
   "pinData": {},
@@ -1923,57 +2040,6 @@
         ]
       ]
     },
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Buscar alerta3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar alerta3": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar Alerta": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items": {
-      "main": [
-        [
-          {
-            "node": "No Operation, do nothing4",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "WeatherAPI1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Mensagem Alerta Aceito": {
       "main": [
         [
@@ -2018,61 +2084,6 @@
         ]
       ]
     },
-    "WeatherAPI1": {
-      "main": [
-        [
-          {
-            "node": "Code1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "If1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Basic LLM Chain": {
-      "main": [
-        [
-          {
-            "node": "Enviar Alerta",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Mensagem Erro": {
       "main": [
         [
@@ -2105,13 +2116,141 @@
           }
         ]
       ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar alerta existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Alerta": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WeatherAPI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WeatherAPI1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Mensagem é nova?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem é nova?": {
+      "main": [
+        [
+          {
+            "node": "Atualizar quantidade de alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar alerta existente": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar quantidade de alerta": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "58e4b212-f4c2-45c8-a8df-6df5ae9ae668",
+  "versionId": "9c50a172-cc1f-4619-bc52-14233e7f1c63",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e2ffe4a13ab7608a185e0ee2dc37196fd3f36d2d9f915f780ff1c6b49fe3e8ec"
