@@ -54,12 +54,14 @@ Permitir que usuários:
 
 ## ⏰ Agendamento Diário
 
-- O nó `Schedule Trigger` executa diariamente às 08:00.
+- O nó `Schedule Trigger` executa a cada 1 hora.
 - O fluxo:
-  - Consulta todos os usuários com `alertaAtivo = true`
-  - Verifica se há alertas climáticos severos via `WeatherAPI`
-  - Traduz e formata a mensagem com ajuda da OpenAI
-  - Envia para os respectivos usuários via Evolution API
+  - Verifica todos os usuários com `alertaAtivo = true`.
+  - Consulta os alertas ativos via WeatherAPI.
+  - Gera mensagem humanizada com auxílio da IA.
+  - Valida se a **mensagem é nova** (compara `qtd_alertas`).
+  - Atualiza o campo `qtd_alertas` no Supabase.
+  - Envia o alerta somente se houver mudança.
 
 ---
 
@@ -83,7 +85,8 @@ Permitir que usuários:
 |--------------|--------------|-----------------------------------------|
 | whatsapp     | string       | Referência ao usuário                   |
 | cidade       | string       | Nome da cidade para previsão            |
-| alertaAtivo  | boolean      | Flag indicando se o alerta está ativo   |
+| alertaAtivo  | boolean      | Define se o alerta está ativo           |
+| qtd_alertas  | string       | Quantidade de alertas identificados     |
 | updated_at   | timestamptz  | Informa última alteração                |
 
 ---
@@ -95,3 +98,6 @@ Permitir que usuários:
 
 ### ❌ Recusa:
 > "Ok, sem problemas. Se quiser receber alertas depois, é só avisar!"
+
+### ⚠️ Cidade não encontrada:
+> "Ops! 😕 Não consegui encontrar a previsão do tempo para a cidade que você informou. Verifique se o nome está correto e tente novamente."
