@@ -1511,6 +1511,90 @@
       ],
       "id": "e0ada75c-d861-4493-bf94-452116d5d8bb",
       "name": "Sticky Note20"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        160
+      ],
+      "id": "8af37610-a98f-400f-9a59-55d0a9f5f417",
+      "name": "No Operation, do nothing3"
+    },
+    {
+      "parameters": {
+        "content": "## Mensagem para status 400 (cidade inválida ou erro de requisição)",
+        "height": 400,
+        "width": 720,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        0
+      ],
+      "id": "63fff671-7adb-4879-b977-8814993a3f36",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "texto",
+              "value": "=Ops! 😕 Não consegui encontrar a previsão do tempo para a cidade que você informou. Verifique se o nome está correto e tente novamente. Ex: São Paulo, Rio de Janeiro, Salvador..."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mensagem Cidade Não Encontrada",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1720,
+        160
+      ],
+      "id": "31a46573-3744-4af0-8fe2-3d9d17cf0269"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.server_url }}/message/sendText/{{ $('Webhook').item.json.body.instance }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Simplificação de Dados').item.json.whatsapp }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Mensagem Cidade Não Encontrada').item.json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb7508dd-d098-4eac-b471-d7378d5677bb",
+      "name": "Mensagem Não Encontrada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GGrqzaQLEmSqNj4M",
+          "name": "Evolution Header"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -1655,7 +1739,13 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "Mensagem Cidade Não Encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Code": {
@@ -1993,13 +2083,35 @@
           }
         ]
       ]
+    },
+    "Mensagem Cidade Não Encontrada": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Não Encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Não Encontrada": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "208cbc9c-fafa-41f2-9f22-c20f723c0d99",
+  "versionId": "58e4b212-f4c2-45c8-a8df-6df5ae9ae668",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e2ffe4a13ab7608a185e0ee2dc37196fd3f36d2d9f915f780ff1c6b49fe3e8ec"
